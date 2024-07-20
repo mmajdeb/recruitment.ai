@@ -5,12 +5,19 @@ import dotenv from "dotenv";
 import "./auth";
 import User from "./types";
 import { authGuard } from "./middleware/authGuard";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Vite's default port
+    credentials: true,
+  })
+);
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
@@ -40,7 +47,7 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("/profile");
+    res.redirect("http://localhost:5173/profile"); // Redirect to the React app
   }
 );
 
@@ -55,7 +62,7 @@ app.get("/logout", (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.redirect("/");
+    res.redirect("http://localhost:5173"); // Redirect to React app
   });
 });
 
