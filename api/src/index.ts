@@ -6,6 +6,7 @@ import "./auth";
 import User from "./types";
 import { authGuard } from "./middleware/authGuard";
 import cors from "cors";
+import posts from "./data/posts";
 
 dotenv.config();
 
@@ -70,6 +71,10 @@ app.get("/logout", (req, res, next) => {
       res.json({ success: true }); // Return a JSON response
     });
   });
+});
+
+app.get("/posts", (req, res) => {
+  res.json(posts);
 });
 
 app.listen(port, () => {

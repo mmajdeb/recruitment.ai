@@ -11,7 +11,8 @@ const theme = createTheme({
     },
     text: {
       primary: "#880e4f", // Dark Magenta Text
-      secondary: "#ffffff", // White Text
+      secondary: "#000", // black Text
+      disabled: "#a0a0a0", // Disabled Text Color
     },
     background: {
       default: "#fce4ec", // Light Magenta Background

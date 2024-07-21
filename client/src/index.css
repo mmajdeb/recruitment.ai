@@ -34,3 +34,22 @@ button:focus {
 .container {
     padding: 1rem;
 }
+
+@keyframes highlight {
+    0% {
+        border: 2px solid inherit;
+    }
+
+    50% {
+        border: 2px solid #f50057;
+        /* Color for highlighting */
+    }
+
+    100% {
+        border: 2px solid inherit;
+    }
+}
+
+.highlight {
+    animation: highlight 1s ease-in-out;
+}
