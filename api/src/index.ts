@@ -27,6 +27,7 @@ app.use(
       maxAge: 365 * 24 * 60 * 60 * 1000, // 365 day
       secure: process.env.NODE_ENV === "production", // Set to true if using HTTPS
       httpOnly: true, // Prevent JavaScript from accessing the cookie
+      sameSite: "lax", // Prevent CSRF attacks
     },
   })
 );
@@ -52,8 +53,7 @@ app.get(
 );
 
 app.get("/profile", authGuard, (req, res) => {
-  const user = req.user as User;
-  res.send(`Hello, ${user.displayName}.`);
+  res.json(req.user);
 });
 
 // Logout route
@@ -62,7 +62,13 @@ app.get("/logout", (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.redirect("http://localhost:5173"); // Redirect to React app
+    req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.clearCookie("connect.sid", { path: "/" });
+      res.json({ success: true }); // Return a JSON response
+    });
   });
 });
 
