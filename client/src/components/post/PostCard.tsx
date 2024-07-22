@@ -1,29 +1,18 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Button,
-  Box,
-  Chip,
-  Divider,
-  IconButton,
-} from "@mui/material";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { Card, CardContent, Divider } from "@mui/material";
 import { Post } from "../../types/Post";
-import imagePath from "../../assets/job-post.jpg";
-import useAuth from "../../hooks/useAuth";
-import MarkDown from "../common/MarkDown";
+import PostCardHeader from "./PostCardHeader";
+import PostCardBody from "./PostCardBody";
+import PostCardFooter from "./PostCardFooter";
 
 interface PostCardProps {
   post: Post;
   onSave: (post: Post) => void;
   onApply: (post: Post) => void;
-  onClick: (post: Post) => void;
+  onClick: (post: Post, isButtonClick: boolean) => void;
   isSelected: boolean;
   isHighlighted: boolean;
-  isListView?: boolean; // New prop to conditionally render details
+  isListView?: boolean;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -33,13 +22,13 @@ const PostCard: React.FC<PostCardProps> = ({
   onClick,
   isSelected,
   isHighlighted,
-  isListView = false, // Default to false
+  isListView = false,
 }) => {
-  const { user } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
 
   const handleToggleDetails = () => {
     setShowDetails((prevState) => !prevState);
+    onClick(post, true);
   };
 
   return (
@@ -50,87 +39,30 @@ const PostCard: React.FC<PostCardProps> = ({
         flexDirection: "column",
         position: "relative",
         cursor: "pointer",
-        border: isHighlighted ? "2px solid #f50057" : "none", // Conditionally apply border
+        border: isHighlighted ? "2px solid #f50057" : "none",
       }}
-      onClick={() => onClick(post)}
+      onClick={() => onClick(post, false)}
     >
       <CardContent sx={{ padding: 2, flexGrow: 1 }}>
-        <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-          <CardMedia
-            component="img"
-            image={imagePath}
-            alt={post.title}
-            sx={{
-              width: 50,
-              height: 50,
-              borderRadius: "50%",
-              objectFit: "cover",
-              marginRight: 2,
-            }}
-          />
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{
-              fontWeight: "bold",
-              flexGrow: 1,
-              fontSize: isListView ? "1rem" : "1.75rem", // Ensure title size remains consistent
-            }}
-          >
-            {post.title}
-          </Typography>
-          <IconButton
-            size="small"
-            sx={{ marginLeft: "auto" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSave(post);
-            }}
-          >
-            <BookmarkIcon />
-          </IconButton>
-        </Box>
-
+        <PostCardHeader post={post} isListView={isListView} onSave={onSave} />
         {!isListView && (
-          <>
-            <Typography variant="body1" color="text.secondary">
-              {post.description}
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", marginTop: 2 }}>
-              {post.keywords.map((keyword, index) => (
-                <Chip
-                  key={index}
-                  label={keyword}
-                  sx={{ marginRight: 1, marginBottom: 1 }}
-                />
-              ))}
-            </Box>
-          </>
+          <PostCardBody
+            post={post}
+            isListView={isListView}
+            isSelected={isSelected}
+          />
         )}
-
-        {isSelected && <MarkDown>{post.details}</MarkDown>}
       </CardContent>
       {!isListView && <Divider />}
-      <CardContent
-        sx={{ display: "flex", justifyContent: "flex-end", padding: 2 }}
-      >
-        <Button size="small" variant="outlined" onClick={handleToggleDetails}>
-          {showDetails ? "Hide Details" : "View Details"}
-        </Button>
-        {user && (
-          <Button
-            size="small"
-            variant="contained"
-            sx={{ marginLeft: 1 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onApply(post);
-            }}
-          >
-            Apply
-          </Button>
-        )}
-      </CardContent>
+      {!isListView && (
+        <PostCardFooter
+          post={post}
+          showDetails={showDetails}
+          handleToggleDetails={handleToggleDetails}
+          onApply={onApply}
+          isSelected={isSelected}
+        />
+      )}
     </Card>
   );
 };

@@ -4,16 +4,47 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Typography,
   Button,
+  Grid,
+  Drawer,
+  useMediaQuery,
+  IconButton,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Theme } from "@mui/material/styles";
+import { styled } from "@mui/system";
 import usePosts from "../hooks/usePost";
 import { Post } from "../types/Post";
 import PostCard from "../components/post/PostCard";
 
+// Styled component for custom scrollbar
+const ScrollableBox = styled(Box)(() => ({
+  overflowY: "auto",
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: "#888",
+    borderRadius: "8px",
+  },
+  "&::-webkit-scrollbar-thumb:hover": {
+    backgroundColor: "#555",
+  },
+  "&::-webkit-scrollbar-track": {
+    backgroundColor: "#f1f1f1",
+    borderRadius: "8px",
+  },
+  scrollbarWidth: "thin",
+  scrollbarColor: "#888 #f1f1f1",
+}));
+
 const Home: React.FC = () => {
   const { posts, loading, error } = usePosts();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isSmallScreen = useMediaQuery((theme: Theme) =>
+    theme.breakpoints.down("md")
+  );
 
   const handleApply = (post: Post) => {
     console.log("Applying on:", post);
@@ -21,11 +52,15 @@ const Home: React.FC = () => {
 
   const handleSave = (post: Post) => {
     console.log("Saved post:", post);
-    // Implement save logic
   };
 
-  const handleClick = (post: Post) => {
-    setSelectedPost(post);
+  const handleClick = (post: Post, isButtonClick: boolean = false) => {
+    setSelectedPost((prevPost) =>
+      prevPost?.id === post.id && isButtonClick ? null : post
+    );
+    if (isSmallScreen) {
+      setDrawerOpen(false);
+    }
   };
 
   const handleCloseDetails = () => {
@@ -40,65 +75,77 @@ const Home: React.FC = () => {
     return <Alert severity="error">{error}</Alert>;
   }
 
+  const postList = (
+    <>
+      {posts.map((post) => (
+        <PostCard
+          key={post.id}
+          post={post}
+          onSave={handleSave}
+          onApply={handleApply}
+          onClick={handleClick}
+          isSelected={selectedPost?.id === post.id}
+          isHighlighted={selectedPost?.id === post.id}
+          isListView={!!selectedPost}
+        />
+      ))}
+    </>
+  );
+
   return (
     <Container>
-      <Box sx={{ display: "flex", height: "100vh" }}>
-        {!selectedPost ? (
-          <Box
-            sx={{
-              width: "100%",
-              overflowY: "auto",
-              padding: 2,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Post List
-            </Typography>
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onSave={handleSave}
-                onApply={handleApply}
-                onClick={handleClick}
-                isSelected={false} // Not needed for this view
-                isHighlighted={false} // No post is highlighted in this view
-                isListView={false} // Pass true to show description and keywords in list view
-              />
-            ))}
-          </Box>
-        ) : (
-          <>
-            <Box
-              sx={{
-                flex: 1,
-                width: "30%",
-                overflowY: "auto",
-                borderRight: "1px solid #ccc",
-                padding: 2,
-              }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+        }}
+      >
+        <Grid
+          container
+          spacing={2}
+          sx={{ flex: 1, alignContent: "flex-start" }}
+        >
+          {isSmallScreen && selectedPost ? (
+            <>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={() => setDrawerOpen(true)}
+                edge="start"
+                sx={{ marginTop: "20px", marginLeft: "15px" }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Drawer
+                anchor="left"
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                sx={{ width: 250 }}
+              >
+                <ScrollableBox sx={{ width: 250, padding: 2 }}>
+                  {postList}
+                </ScrollableBox>
+              </Drawer>
+            </>
+          ) : (
+            <Grid
+              item
+              xs={12}
+              md={selectedPost ? 4 : 12}
+              component={ScrollableBox}
+              sx={{ padding: 2 }}
             >
-              <Typography variant="h6" gutterBottom>
-                Post List
-              </Typography>
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onSave={handleSave}
-                  onApply={handleApply}
-                  onClick={handleClick}
-                  isSelected={false} // Not needed for this view
-                  isHighlighted={selectedPost.id === post.id} // Highlight the selected post
-                  isListView={true} // Pass true to show description and keywords in list view
-                />
-              ))}
-            </Box>
+              {postList}
+            </Grid>
+          )}
 
-            <Box
+          {selectedPost && (
+            <Grid
+              item
+              xs={12}
+              md={8}
               sx={{
-                flex: 2,
-                width: "70%",
                 padding: 2,
                 display: "flex",
                 flexDirection: "column",
@@ -110,12 +157,10 @@ const Home: React.FC = () => {
                   display: "flex",
                   alignItems: "center",
                   width: "100%",
-                  marginBottom: 2,
+                  justifyContent: "flex-end",
+                  marginTop: isSmallScreen ? "-50px" : "10px",
                 }}
               >
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  Post Details
-                </Typography>
                 <Button
                   variant="outlined"
                   color="error"
@@ -129,13 +174,13 @@ const Home: React.FC = () => {
                 onSave={handleSave}
                 onApply={handleApply}
                 onClick={handleClick}
-                isSelected={true} // This indicates that this is the currently selected post
-                isHighlighted={false} // Highlighting is not needed in detail view
-                isListView={false} // Pass false to show full details in detailed view
+                isSelected={true}
+                isHighlighted={false}
+                isListView={false}
               />
-            </Box>
-          </>
-        )}
+            </Grid>
+          )}
+        </Grid>
       </Box>
     </Container>
   );
