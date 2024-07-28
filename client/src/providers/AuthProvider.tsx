@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useState, ReactNode } from "react";
 import axios from "axios";
 
 interface User {
@@ -35,24 +35,7 @@ export const AuthContext = createContext<AuthContextProps | undefined>(
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get("/api/profile", {
-          withCredentials: true,
-        });
-        setUser(response.data);
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   const login = () => {
     window.location.href = "/api/login";

@@ -1,5 +1,15 @@
-import React from "react";
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import React, { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Avatar,
+  Menu,
+  MenuItem,
+  ListItemText,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../../hooks/useAuthContext";
 
@@ -8,7 +18,16 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = ({ isAuthenticated }) => {
-  const { login } = useAuthContext();
+  const { login, logout, user } = useAuthContext();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <AppBar position="static" color="primary" sx={{ width: "100%" }}>
@@ -24,9 +43,44 @@ const NavBar: React.FC<NavBarProps> = ({ isAuthenticated }) => {
         <Box>
           {isAuthenticated ? (
             <>
-              <Button color="inherit" component={Link} to="/profile">
-                Profile
-              </Button>
+              <Avatar
+                src={user?.photos[0].value}
+                alt="Profile"
+                onClick={handleClick}
+                sx={{ cursor: "pointer" }}
+              />
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                MenuListProps={{ autoFocusItem: false }}
+              >
+                <MenuItem
+                  component={Link}
+                  to="/profile"
+                  onClick={handleClose}
+                  autoFocus={false}
+                >
+                  <ListItemText primary={user?.displayName} />
+                </MenuItem>
+                <MenuItem
+                  component={Link}
+                  to="/settings"
+                  onClick={handleClose}
+                  autoFocus={false}
+                >
+                  Settings
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    logout();
+                    handleClose();
+                  }}
+                  autoFocus={false}
+                >
+                  Logout
+                </MenuItem>
+              </Menu>
             </>
           ) : (
             <Button color="inherit" onClick={login}>
