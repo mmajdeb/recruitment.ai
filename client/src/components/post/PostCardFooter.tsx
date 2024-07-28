@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, CardContent } from "@mui/material";
 import { Post } from "../../types/Post";
-import useAuth from "../../hooks/useAuth";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 interface PostCardFooterProps {
   post: Post;
@@ -17,7 +17,7 @@ const PostCardFooter: React.FC<PostCardFooterProps> = ({
   onApply,
   isSelected,
 }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   return (
     <CardContent

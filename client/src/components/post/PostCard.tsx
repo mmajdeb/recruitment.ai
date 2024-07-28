@@ -38,7 +38,7 @@ const PostCard: React.FC<PostCardProps> = ({
         display: "flex",
         flexDirection: "column",
         position: "relative",
-        cursor: "pointer",
+        cursor: isSelected ? "text" : "pointer",
         border: isHighlighted ? "2px solid #f50057" : "none",
       }}
       onClick={() => onClick(post, false)}

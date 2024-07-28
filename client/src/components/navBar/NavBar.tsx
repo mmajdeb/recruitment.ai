@@ -1,14 +1,14 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 interface NavBarProps {
   isAuthenticated: boolean;
 }
 
 const NavBar: React.FC<NavBarProps> = ({ isAuthenticated }) => {
-  const { login } = useAuth();
+  const { login } = useAuthContext();
 
   return (
     <AppBar position="static" color="primary" sx={{ width: "100%" }}>
